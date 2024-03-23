@@ -1,148 +1,119 @@
 /*
-2. Создать класс-родитель «точка», его наследника – класс «отрезок», 
-наследника выпуклого отрезка «четырехугольник» 
-(нарисовать, стереть, закрасить, передвинуть, повернуть).
+4. Создать класс «меню» и его наследников - горизонтальное, вертикальное, иерархическое (добавить пункт, нарисовать).
 */
 
 // make run LAB=3
-
 #include <iostream>
-#include <cmath>
+#include <vector>
 #include <windows.h>
 
-// Класс "Точка"
-class Point {
+class Menu {
 protected:
-    double x, y;
+    std::vector<std::string> items;
+    int selectedItem;
 
 public:
-    Point(double x = 0, double y = 0) : x(x), y(y) {}
+    Menu() : selectedItem(0) {}
 
-    void draw() const {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        COORD pos = {static_cast<SHORT>(x), static_cast<SHORT>(y)};
-        SetConsoleCursorPosition(hConsole, pos);
-        std::cout << "*";
+    void addItem(const std::string& item) {
+        items.push_back(item);
     }
 
-    void erase() const {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        COORD pos = {static_cast<SHORT>(x), static_cast<SHORT>(y)};
-        SetConsoleCursorPosition(hConsole, pos);
-        std::cout << " ";
+    virtual void draw() const = 0;
+
+    void selectNext() {
+        selectedItem = (selectedItem + 1) % items.size();
     }
 
-    void move(double dx, double dy) {
-        x += dx;
-        y += dy;
+    void selectPrevious() {
+        selectedItem = (selectedItem - 1 + items.size()) % items.size();
     }
 
-    // Поворот точки относительно начала координат
-    void rotate(double angle) {
-        double newX = x * cos(angle) - y * sin(angle);
-        double newY = x * sin(angle) + y * cos(angle);
-        x = newX;
-        y = newY;
+    std::string getSelectedItem() const {
+        return items[selectedItem];
     }
 };
 
-// Класс "Отрезок"
-class Segment {
-protected:
-    Point start, end;
-
+class HorizontalMenu : public Menu {
 public:
-    Segment(const Point& start, const Point& end) : start(start), end(end) {}
-
-    void draw() const {
-        start.draw();
-        end.draw();
-    }
-
-    void erase() const {
-        start.erase();
-        end.erase();
-    }
-
-    void move(double dx, double dy) {
-        start.move(dx, dy);
-        end.move(dx, dy);
-    }
-
-    // Поворот отрезка относительно начала координат
-    void rotate(double angle) {
-        start.rotate(angle);
-        end.rotate(angle);
+    void draw() const override {
+        for (int i = 0; i < items.size(); ++i) {
+            if (i == selectedItem) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                std::cout << items[i] << " ";
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            } else {
+                std::cout << items[i] << " ";
+            }
+        }
+        std::cout << std::endl;
     }
 };
 
-// Класс "Четырехугольник"
-class Quadrilateral {
+class VerticalMenu : public Menu {
+public:
+    void draw() const override {
+        for (int i = 0; i < items.size(); ++i) {
+            if (i == selectedItem) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                std::cout << items[i] << std::endl;
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            } else {
+                std::cout << items[i] << std::endl;
+            }
+        }
+    }
+};
+
+class HierarchicalMenu : public Menu {
 private:
-    Point p1, p2, p3, p4;
+    std::vector<Menu*> subMenus;
 
 public:
-    Quadrilateral(const Point& p1, const Point& p2, const Point& p3, const Point& p4)
-        : p1(p1), p2(p2), p3(p3), p4(p4) {}
-
-    void draw() const {
-        p1.draw();
-        p2.draw();
-        p3.draw();
-        p4.draw();
+    void addSubMenu(Menu* menu) {
+        subMenus.push_back(menu);
     }
 
-    void erase() const {
-        p1.erase();
-        p2.erase();
-        p3.erase();
-        p4.erase();
-    }
-
-    void move(double dx, double dy) {
-        p1.move(dx, dy);
-        p2.move(dx, dy);
-        p3.move(dx, dy);
-        p4.move(dx, dy);
-    }
-
-    // Поворот четырехугольника относительно начала координат
-    void rotate(double angle) {
-        p1.rotate(angle);
-        p2.rotate(angle);
-        p3.rotate(angle);
-        p4.rotate(angle);
+    void draw() const override {
+        for (int i = 0; i < items.size(); ++i) {
+            if (i == selectedItem) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                std::cout << items[i] << std::endl;
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+                if (i < subMenus.size()) {
+                    subMenus[i]->draw();
+                }
+            } else {
+                std::cout << items[i] << std::endl;
+            }
+        }
     }
 };
 
 int main() {
-    Point p1(10, 10);
-    Point p2(20, 10);
-    Point p3(20, 20);
-    Point p4(10, 20);
+    HorizontalMenu hMenu;
+    hMenu.addItem("File");
+    hMenu.addItem("Edit");
+    hMenu.addItem("View");
 
-    Segment s(p1, p2);
-    Quadrilateral q(p1, p2, p3, p4);
+    VerticalMenu vMenu;
+    vMenu.addItem("New");
+    vMenu.addItem("Open");
+    vMenu.addItem("Save");
 
-    s.draw();
-    q.draw();
-    Sleep(2000);
+    HierarchicalMenu hiMenu;
+    hiMenu.addItem("File");
+    hiMenu.addItem("Edit");
 
-    s.erase();
-    q.erase();
-    Sleep(2000);
+    HorizontalMenu fileMenu;
+    fileMenu.addItem("New");
+    fileMenu.addItem("Open");
+    fileMenu.addItem("Save");
+    hiMenu.addSubMenu(&fileMenu);
 
-    s.move(5, 5);
-    q.move(5, 5);
-    s.draw();
-    q.draw();
-    Sleep(2000);
-
-    s.rotate(3.14159 / 2);
-    q.rotate(3.14159 / 2);
-    s.draw();
-    q.draw();
-    Sleep(2000);
+    hMenu.draw();
+    vMenu.draw();
+    hiMenu.draw();
 
     return 0;
 }
