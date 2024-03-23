@@ -7,6 +7,8 @@
 // д)   печати чисел Rational в форме a / b, где а – числитель, b – знаменатель.
 // е)   печати чисел Rational в форме с плавающей точкой.
 
+// make run LAB=1
+
 #include <iostream>
 #include <algorithm>
 
