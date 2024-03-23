@@ -5,46 +5,27 @@
 // make run LAB=3
 #include <iostream>
 #include <vector>
-#include <windows.h>
 
 class Menu {
 protected:
     std::vector<std::string> items;
-    int selectedItem;
 
 public:
-    Menu() : selectedItem(0) {}
-
     void addItem(const std::string& item) {
         items.push_back(item);
     }
 
-    virtual void draw() const = 0;
-
-    void selectNext() {
-        selectedItem = (selectedItem + 1) % items.size();
-    }
-
-    void selectPrevious() {
-        selectedItem = (selectedItem - 1 + items.size()) % items.size();
-    }
-
-    std::string getSelectedItem() const {
-        return items[selectedItem];
-    }
+    virtual void draw(int depth = 0) const = 0;
 };
 
 class HorizontalMenu : public Menu {
 public:
-    void draw() const override {
-        for (int i = 0; i < items.size(); ++i) {
-            if (i == selectedItem) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                std::cout << items[i] << " ";
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            } else {
-                std::cout << items[i] << " ";
-            }
+    void draw(int depth = 0) const override {
+        for (int i = 0; i < depth; ++i) {
+            std::cout << "---";  // отступ для каждого уровня глубины
+        }
+        for (const auto& item : items) {
+            std::cout << item << " ";
         }
         std::cout << std::endl;
     }
@@ -52,44 +33,45 @@ public:
 
 class VerticalMenu : public Menu {
 public:
-    void draw() const override {
-        for (int i = 0; i < items.size(); ++i) {
-            if (i == selectedItem) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                std::cout << items[i] << std::endl;
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            } else {
-                std::cout << items[i] << std::endl;
+    void draw(int depth = 0) const override {
+        for (const auto& item : items) {
+            for (int i = 0; i < depth; ++i) {
+                std::cout << "---";  // отступ для каждого уровня глубины
             }
+            std::cout << item << std::endl;
         }
     }
 };
 
 class HierarchicalMenu : public Menu {
 private:
-    std::vector<Menu*> subMenus;
+    struct MenuItem {
+        std::string title;
+        Menu* submenu;
+
+        MenuItem(const std::string& t, Menu* s = nullptr) : title(t), submenu(s) {}
+    };
+
+    std::vector<MenuItem> items;
 
 public:
-    void addSubMenu(Menu* menu) {
-        subMenus.push_back(menu);
+    void addItem(const std::string& title, Menu* submenu = nullptr) {
+        items.emplace_back(title, submenu);
     }
 
-    void draw() const override {
-        for (int i = 0; i < items.size(); ++i) {
-            if (i == selectedItem) {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-                std::cout << items[i] << std::endl;
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-                if (i < subMenus.size()) {
-                    subMenus[i]->draw();
-                }
-            } else {
-                std::cout << items[i] << std::endl;
+    void draw(int depth = 0) const override {
+        for (const auto& item : items) {
+            for (int i = 0; i < depth; ++i) {
+                std::cout << "---";  // отступ для каждого уровня глубины
+            }
+            std::cout << item.title << std::endl;
+
+            if (item.submenu) {
+                item.submenu->draw(depth + 1);  // рекурсивный вызов для подменю
             }
         }
     }
 };
-
 int main() {
     HorizontalMenu hMenu;
     hMenu.addItem("File");
@@ -102,17 +84,21 @@ int main() {
     vMenu.addItem("Save");
 
     HierarchicalMenu hiMenu;
-    hiMenu.addItem("File");
+    hiMenu.addItem("File", &hMenu);// добавляем подменю в горизонтальное меню
     hiMenu.addItem("Edit");
 
-    HorizontalMenu fileMenu;
-    fileMenu.addItem("New");
-    fileMenu.addItem("Open");
-    fileMenu.addItem("Save");
-    hiMenu.addSubMenu(&fileMenu);
+    HorizontalMenu hSubMenu;
+    hSubMenu.addItem("Import");
+    hSubMenu.addItem("Export");
+    hiMenu.addItem("File Operations", &hSubMenu);  // добавляем подменю в вертикальное меню
+    hiMenu.addItem("View", &vMenu);
+    
+    // Копируем предварительно или создаем новое меню иначе все зациклится если передадим ссылку на текущее hiMenu
+    HierarchicalMenu hiMenu2 = hiMenu; 
+    hiMenu.addItem("Hierahical menu in hierahical menu", &hiMenu2);
 
-    hMenu.draw();
-    vMenu.draw();
+    // hMenu.draw();
+    // vMenu.draw();
     hiMenu.draw();
 
     return 0;
