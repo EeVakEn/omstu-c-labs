@@ -177,13 +177,13 @@ int task2() {
 
     string inputFilename, outputFilename;
 
-    cout << "Введите название входного файла (Введите 0 чтобы использовать дефолтный):" << endl;
+    cout << "Введите название входного файла (Введите 0 чтобы использовать дефолтный files/lab12_task2_in.txt):" << endl;
     cin >> inputFilename;
 
     inputFilename = (inputFilename == "0") ? defaultInputFilename : "files/" + inputFilename;
 
 
-    cout << "Введите название выходного файла  (Введите 0 чтобы использовать дефолтный): " << endl;
+    cout << "Введите название выходного файла  (Введите 0 чтобы использовать дефолтный files/lab12_task2_out.txt): " << endl;
     cin >> outputFilename;
 
 
