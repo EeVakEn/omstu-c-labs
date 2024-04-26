@@ -24,7 +24,7 @@ using namespace std;
 
 
 double Z(double a, double x, double y) {
-    return pow(sqrt(a * x * y * y), 1 / 5) + 1.3 * sin(x - 1.9);
+    return pow(a * x * y * y, 1 / 5) + 1.3 * sin(x - a);
 }
 
 void task1(){

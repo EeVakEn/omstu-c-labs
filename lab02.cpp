@@ -27,7 +27,7 @@ void task1() {
         cout << "Значение функции: " <<  sqrt(x + a) << endl;
     } else if (x > 0.3) {
         cout << "Значение функции: " <<  x << endl;
-    } else if (x <= 0.3) {
+    } else {
         cout << "Значение функции: " <<  cos(x - a) << endl;
     }
 

@@ -149,7 +149,7 @@ bool isBalancedBrackets(string s) {
     return stack.isEmpty(); // стек должен быть пустым после проверки всех символов
 }
 void task2(){
-    string str = "{[(()]}";
+    string str = "{[((gfdgfdgfd))]}";
     cout << "Задание 2" << endl;
     cout << str << endl;
     if (isBalancedBrackets(str)) {

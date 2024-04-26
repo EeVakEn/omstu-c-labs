@@ -38,14 +38,13 @@ void task1() {
     vector<double> F1_values;
     vector<double> F2_values;
 
-    int i = 0;
+    double x = a;
     do {
-        double x = a + i * step;
         x_values.push_back(x);
         F1_values.push_back(F1(x));
         F2_values.push_back(F2(x));
-        i++;
-    } while (i < n);
+        x += step;
+    } while (x < b);
 
     cout << "Задание 1 \n\n";
     cout << " itetation | x      | F1(x)     | F2(x)" << endl;
